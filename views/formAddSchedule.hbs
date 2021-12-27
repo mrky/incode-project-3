@@ -1,0 +1,35 @@
+<form action="/schedules" method="POST" class="mb-4 col-sm col-md-8 col-lg-6 mx-auto">
+    <div class="form-group">
+        <label for="user-id">User</label>
+        <select class="form-control" name="userId" id="user-id">
+            <option selected="selected" disabled="disabled">Select a user...</option>
+            {{#each users as | user userId|}}
+            <option value="{{userId}}">{{user.firstname}} {{user.lastname}}</option>
+            {{/each}}
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="day">Day</label>
+        <select class="form-control" name="day" id="day">
+            <option selected="selected" disabled="disabled">Select a day...</option>
+            <option value="1">Monday</option>
+            <option value="2">Tuesday</option>
+            <option value="3">Wednesday</option>
+            <option value="4">Thursday</option>
+            <option value="5">Friday</option>
+            <option value="6">Saturday</option>
+            <option value="7">Sunday</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="start-at">Start time</label>
+        <input type="time" id="start-at" name="startAt" class="form-control">
+    </div>
+    <div class="form-group">
+        <label for="end-at">End time</label>
+        <input type="time" id="end-at" name="endAt" class="form-control">
+    </div>
+    <input type="submit" value="Add Schedule" class="btn btn-primary btn-block mt-4">
+</form>
+
+{{> buttonRow }}

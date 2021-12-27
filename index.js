@@ -1,17 +1,54 @@
 const express = require('express');
+const path = require('path');
+const exphbs = require('express-handlebars');
 const app = express();
-const port = 3000;
+const port = 3002;
 const { users, schedules } = require('./data');
 const crypto = require('crypto');
+const formatTime = require('./utils/formatTime');
+
+const days = {
+    1: 'Monday',
+    2: 'Tuesday',
+    3: 'Wednesday',
+    4: 'Thursday',
+    5: 'Friday',
+    6: 'Saturday',
+    7: 'Sunday',
+};
+
+app.set('view engine', 'hbs');
+app.set('views', path.join(__dirname, 'views'));
+
+app.engine(
+    'hbs',
+    exphbs({
+        defaultLayout: 'main',
+        extname: 'hbs',
+        helpers: {
+            json: function (context) {
+                return JSON.stringify(context);
+            },
+        },
+        partialsDir: __dirname + '/views/partials',
+    })
+);
 
 app.use(express.urlencoded({ extended: false }));
 
 app.get('/', (req, res) => {
-    res.send('Welcome to our schedule website');
+    const title = 'Welcome to our schedule website';
+    res.render('index', { title });
 });
 
 app.get('/users', (req, res) => {
-    res.json(users);
+    const title = 'All Users';
+    res.render('users', { title, users, linkName: true, linkSchedules: true });
+});
+
+app.get('/users/new', (req, res) => {
+    const title = 'Add a New User';
+    res.render('formAddUser', { title });
 });
 
 app.post('/users', (req, res) => {
@@ -30,16 +67,28 @@ app.post('/users', (req, res) => {
 
     users.push(newUser);
 
-    res.json(newUser);
+    res.redirect('/users');
 });
 
 app.get('/users/:userId', (req, res) => {
     const userId = parseInt(req.params.userId);
-
     if (userId < users.length) {
-        res.json(users[userId]);
+        const title = `${users[userId].firstname} ${users[userId].lastname}'s Profile`;
+        res.render('users', {
+            title,
+            users: [users[userId]],
+            userId,
+            linkName: false,
+            linkSchedules: true,
+        });
     } else {
-        res.send('User does not exist');
+        const title = 'User does not exist';
+        res.render('users', {
+            title,
+            users: null,
+            linkName: false,
+            linkSchedules: false,
+        });
     }
 });
 
@@ -51,41 +100,51 @@ app.get('/users/:userId/schedules', (req, res) => {
             return currentObj.user_id === userId;
         });
 
-        if (userSchedules.length !== 0) {
-            res.json(userSchedules);
-        } else {
-            res.send(
-                users[userId].firstname +
-                    ' ' +
-                    users[userId].lastname +
-                    ' does not have any schedules.'
-            );
+        const title = `${users[userId].firstname} ${users[userId].lastname}'s Schedules`;
+        let message;
+        if (userSchedules.length === 0) {
+            message = `${users[userId].firstname} does not have any schedules.`;
         }
+        res.render('schedules', {
+            title,
+            schedules: userSchedules,
+            days,
+            message,
+        });
     } else {
-        res.send('User does not exist');
+        const title = 'User does not exist';
+        res.render('schedules', { title });
     }
 });
 
 app.get('/schedules', (req, res) => {
-    res.json(schedules);
+    const title = 'All Schedules';
+    res.render('schedules', { title, schedules, days });
+});
+
+app.get('/schedules/new', (req, res) => {
+    const title = 'Add a New Schedule';
+    res.render('formAddSchedule', { title, users });
 });
 
 app.post('/schedules', (req, res) => {
-    const userId = parseInt(req.body.user_id);
+    const userId = parseInt(req.body.userId);
     const day = parseInt(req.body.day);
-    const startAt = req.body.start_at;
-    const endAt = req.body.end_at;
+    const { startAt, endAt } = req.body;
+
+    const startAtFormatted = formatTime(startAt);
+    const endAtFormatted = formatTime(endAt);
 
     const newSchedule = {
         user_id: userId,
         day,
-        start_at: startAt,
-        end_at: endAt,
+        start_at: startAtFormatted,
+        end_at: endAtFormatted,
     };
 
     schedules.push(newSchedule);
 
-    res.json(newSchedule);
+    res.redirect('/schedules');
 });
 
 app.listen(port, () => {

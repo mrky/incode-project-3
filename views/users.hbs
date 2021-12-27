@@ -1,0 +1,43 @@
+{{#if users}}
+<table class="table mb-4">
+    <tr>
+        <th>First name</th>
+        <th>Last name</th>
+        <th>Email</th>
+        <th>Password</th>
+    </tr>
+    {{#each users as |user thisUserId|}}
+    <tr>
+        <td>
+            {{#if ../linkName}}
+            <a href="/users/{{thisUserId}}">{{this.firstname}}</a>
+            {{else}}
+            {{this.firstname}}
+            {{/if}}
+        </td>
+
+        <td>
+            {{#if ../linkName}}
+            <a href="/users/{{thisUserId}}">{{this.lastname}}</a>
+            {{else}}
+            {{this.lastname}}
+            {{/if}}
+        </td>
+
+        <td>
+            {{this.email}}
+        </td>
+
+        <td>
+            {{this.password}}
+        </td>
+    </tr>
+    {{/each}}
+</table>
+{{/if}}
+
+{{#unless linkName}}
+<a href="/users/{{userId}}/schedules">View {{users.0.firstname}} {{users.0.lastname}}'s Schedules</a>
+{{/unless}}
+
+{{> buttonRow }}
