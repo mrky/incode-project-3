@@ -2,27 +2,25 @@
 <table class="table mb-4">
     <tr>
         <th>User ID</th>
-        <th>Day</th>
+        <th>Date</th>
         <th>Start time</th>
         <th>End time</th>
     </tr>
     {{#each schedules}}
     <tr>
         <td>
-            <a href="/users/{{this.user_id}}/schedules">{{this.user_id}}</a>
+            {{#if ../showLink}}
+            <a href="/users/{{this.userId}}/schedules">{{this.userId}}</a>
+            {{else}}
+            {{this.userId}}
+            {{/if}}
         </td>
 
-        <td>
-            {{lookup ../days this.day}}
-        </td>
+        <td>{{this.date}}</td>
 
-        <td>
-            {{this.start_at}}
-        </td>
+        <td>{{this.startTime}}</td>
 
-        <td>
-            {{this.end_at}}
-        </td>
+        <td>{{this.endTime}}</td>
     </tr>
     {{/each}}
 </table>

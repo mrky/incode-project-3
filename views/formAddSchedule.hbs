@@ -1,34 +1,74 @@
-<form action="/schedules" method="POST" class="mb-4 col-sm col-md-8 col-lg-6 mx-auto">
+<form action="/schedules" method="POST" class="mb-4 col-sm col-md-10 col-lg-6 mx-auto">
     <div class="form-group">
         <label for="user-id">User</label>
         <select class="form-control" name="userId" id="user-id">
             <option selected="selected" disabled="disabled">Select a user...</option>
-            {{#each users as | user userId|}}
-            <option value="{{userId}}">{{user.firstname}} {{user.lastname}}</option>
+            {{#each users}}
+            <option value="{{this.userId}}">{{this.firstName}} {{this.lastName}}</option>
             {{/each}}
         </select>
     </div>
-    <div class="form-group">
-        <label for="day">Day</label>
-        <select class="form-control" name="day" id="day">
-            <option selected="selected" disabled="disabled">Select a day...</option>
-            <option value="1">Monday</option>
-            <option value="2">Tuesday</option>
-            <option value="3">Wednesday</option>
-            <option value="4">Thursday</option>
-            <option value="5">Friday</option>
-            <option value="6">Saturday</option>
-            <option value="7">Sunday</option>
-        </select>
+    <div class="form-row form-group">
+        <div class="col">
+            <label for="day">Day</label>
+            <select class="form-control" name="day" id="day">
+                <option selected="selected" disabled="disabled">Select a day...</option>
+                {{#each dates}}
+                <option value="{{this}}">{{this}}</option>
+                {{/each}}
+            </select>
+        </div>
+
+        <div class="col">
+            <label for="month">Month</label>
+            <select class="form-control" name="month" id="month">
+                <option selected="selected" disabled="disabled">Select a month...</option>
+                {{#each months as |month monthId|}}
+                <option value="{{monthId}}">{{this}}</option>
+                {{/each}}
+            </select>
+        </div>
+
+        <div class="col">
+            <label for="year">Year</label>
+            <select class="form-control" name="year" id="year">
+                <option selected="selected" disabled="disabled">Select a year...</option>
+                {{#each years}}
+                <option value="{{this}}">{{this}}</option>
+                {{/each}}
+            </select>
+        </div>
     </div>
+
     <div class="form-group">
-        <label for="start-at">Start time</label>
-        <input type="time" id="start-at" name="startAt" class="form-control">
+        <label for="start-hour">Start time (24-hour format)</label>
+        <div class="form-row">
+            <div class="col">
+                <label for="start-hour">Hour (0-23)</label>
+                <input type="number" id="start-hour" name="startHour" min="0" max="23" class="form-control">
+            </div>
+            <div class="col">
+                <label for="start-minute">Minute (0-59)</label>
+                <input type="number" id="start-minute" name="startMinute" min="0" max="59" class="form-control">
+            </div>
+        </div>
     </div>
+
     <div class="form-group">
-        <label for="end-at">End time</label>
-        <input type="time" id="end-at" name="endAt" class="form-control">
+        <label for="end-hour">End time (24-hour format)</label>
+
+        <div class="form-row">
+            <div class="col">
+                <label for="end-hour">Hour (0-23)</label>
+                <input type="number" id="end-hour" name="endHour" min="0" max="23" class="form-control">
+            </div>
+            <div class="col">
+                <label for="end-minute">Minute (0-59)</label>
+                <input type="number" id="end-minute" name="endMinute" min="0" max="59" class="form-control">
+            </div>
+        </div>
     </div>
+
     <input type="submit" value="Add Schedule" class="btn btn-primary btn-block mt-4">
 </form>
 

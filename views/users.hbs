@@ -6,38 +6,34 @@
         <th>Email</th>
         <th>Password</th>
     </tr>
-    {{#each users as |user thisUserId|}}
+    {{#each users}}
     <tr>
         <td>
             {{#if ../linkName}}
-            <a href="/users/{{thisUserId}}">{{this.firstname}}</a>
+            <a href="/users/{{this.userId}}">{{this.firstName}}</a>
             {{else}}
-            {{this.firstname}}
+            {{this.firstName}}
             {{/if}}
         </td>
 
         <td>
             {{#if ../linkName}}
-            <a href="/users/{{thisUserId}}">{{this.lastname}}</a>
+            <a href="/users/{{this.userId}}">{{this.lastName}}</a>
             {{else}}
-            {{this.lastname}}
+            {{this.lastName}}
             {{/if}}
         </td>
 
-        <td>
-            {{this.email}}
-        </td>
+        <td>{{this.email}}</td>
 
-        <td>
-            {{this.password}}
-        </td>
+        <td>{{this.password}}</td>
     </tr>
     {{/each}}
 </table>
 {{/if}}
 
-{{#unless linkName}}
-<a href="/users/{{userId}}/schedules">View {{users.0.firstname}} {{users.0.lastname}}'s Schedules</a>
-{{/unless}}
+{{#if linkSchedules}}
+<a href="/users/{{users.0.userId}}/schedules">View {{users.0.firstName}} {{users.0.lastName}}'s Schedules</a>
+{{/if}}
 
 {{> buttonRow }}
