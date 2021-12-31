@@ -4,22 +4,17 @@ const exphbs = require('express-handlebars');
 const app = express();
 const port = 3002;
 const crypto = require('crypto');
-const mysql = require('mysql2');
 
 require('dotenv').config();
 
+const User = require('./models/users.model');
+const Schedule = require('./models/schedules.model');
+
+// use dayjs to generate a list of months to use in formAddSchedule
 const dayjs = require('dayjs');
 const localeData = require('dayjs/plugin/localeData');
 dayjs.extend(localeData);
 const months = dayjs.months();
-
-const dbConfig = require('./db/config');
-const con = mysql.createConnection(dbConfig);
-
-con.connect((err) => {
-    if (err) throw err;
-    console.log('Connected to database!');
-});
 
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
@@ -48,18 +43,20 @@ app.get('/', (req, res) => {
 app.get('/users', (req, res) => {
     const title = 'All Users';
 
-    const sql =
-        'SELECT user_id AS userId, first_name AS firstName, last_name AS lastName, email, password FROM users';
-    con.query(sql, (err, users) => {
-        if (err) throw err;
-
-        res.render('users', {
-            title,
-            users,
-            linkName: true,
-            linkSchedules: false,
+    User.getUsers()
+        .then((users) => {
+            res.render('users', {
+                title,
+                users,
+                linkName: true,
+                linkSchedules: false,
+            });
+        })
+        .catch((err) => {
+            console.log('err inside getUsers');
+            console.log(err);
+            res.redirect('/');
         });
-    });
 });
 
 app.get('/users/new', (req, res) => {
@@ -82,12 +79,15 @@ app.post('/users', (req, res) => {
         password: hashedPassword,
     };
 
-    con.query('INSERT INTO users SET ?', newUser, (err, result) => {
-        if (err) console.log(err);
-
-        console.log(result);
-        res.redirect('/users');
-    });
+    User.insertUser(newUser)
+        .then(() => {
+            res.redirect('/users');
+        })
+        .catch((err) => {
+            console.log('err inside post/users');
+            console.log(err);
+            res.redirect('/users');
+        });
 });
 
 app.get('/users/:userId', (req, res) => {
@@ -104,24 +104,29 @@ app.get('/users/:userId', (req, res) => {
             linkSchedules,
         });
     } else {
-        const sql = `SELECT user_id AS userId, first_name AS firstName, last_name AS lastName, email, password
-        FROM users
-        WHERE user_id = ?`;
-        con.query(sql, userId, (err, user) => {
-            if (err) console.log(err);
+        User.getUserById(userId)
+            .then((user) => {
+                if (user !== undefined && user.length > 0) {
+                    title = `${user[0].firstName} ${user[0].lastName}'s Profile`;
+                    linkSchedules = true;
+                }
 
-            if (user !== undefined && user.length > 0) {
-                title = `${user[0].firstName} ${user[0].lastName}'s Profile`;
-                linkSchedules = true;
-            }
-
-            res.render('users', {
-                title,
-                users: user,
-                linkName,
-                linkSchedules,
+                res.render('users', {
+                    title,
+                    users: user,
+                    linkName,
+                    linkSchedules,
+                });
+            })
+            .catch((err) => {
+                console.log('err inside get/user/id');
+                console.log(err);
+                res.render('users', {
+                    title,
+                    linkName,
+                    linkSchedules,
+                });
             });
-        });
     }
 });
 
@@ -133,68 +138,61 @@ app.get('/users/:userId/schedules', (req, res) => {
     if (isNaN(userId)) {
         res.render('schedules', { title });
     } else {
-        const sql = `SELECT users.user_id AS userId, 
-        schedules.schedule_id as scheduleId, 
-        DATE_FORMAT(schedules.start_time, '%a, %D  %b %Y') AS 'date', 
-        DATE_FORMAT(schedules.start_time, '%k:%i') AS 'startTime', 
-        DATE_FORMAT(schedules.end_time, '%k:%i') AS 'endTime', 
-        users.first_name AS firstName, 
-        users.last_name AS lastName 
-        FROM schedules 
-        RIGHT JOIN users 
-        ON schedules.user_id = users.user_id 
-        WHERE users.user_id = ?;`;
-        con.query(sql, userId, (err, userSchedules) => {
-            if (err) console.log(err);
+        Schedule.getUserSchedules(userId)
+            .then((userSchedules) => {
+                let message;
+                let schedules;
 
-            let message;
-            let schedules;
-
-            if (userSchedules.length === 0) {
-                res.render('schedules', { title });
-            } else {
-                title = `${userSchedules[0].firstName} ${userSchedules[0].lastName}'s Schedules`;
-                if (userSchedules[0].scheduleId === null) {
-                    message = `${userSchedules[0].firstName} does not have any schedules.`;
-                    schedules = null;
+                if (userSchedules.length === 0) {
+                    res.render('schedules', { title });
                 } else {
-                    schedules = userSchedules;
-                }
+                    title = `${userSchedules[0].firstName} ${userSchedules[0].lastName}'s Schedules`;
+                    if (userSchedules[0].scheduleId === null) {
+                        message = `${userSchedules[0].firstName} does not have any schedules.`;
+                        schedules = null;
+                    } else {
+                        schedules = userSchedules;
+                    }
 
-                res.render('schedules', {
-                    title,
-                    schedules,
-                    message,
-                    showLink: false,
-                });
-            }
-        });
+                    res.render('schedules', {
+                        title,
+                        schedules,
+                        message,
+                        showLink: false,
+                    });
+                }
+            })
+            .catch((err) => {
+                console.log('err inside get/user/id/schedules');
+                console.log(err);
+                res.render('/schedule', { title });
+            });
     }
 });
 
 app.get('/schedules', (req, res) => {
     const title = 'All Schedules';
-    const sql = `SELECT user_id as userId, 
-        DATE_FORMAT(schedules.start_time, '%a, %D  %b %Y') AS 'date', 
-        DATE_FORMAT(schedules.start_time, '%k:%i') AS 'startTime', 
-        DATE_FORMAT(schedules.end_time, '%k:%i') AS 'endTime' 
-        FROM schedules;`;
-    con.query(sql, (err, schedules) => {
-        if (err) throw err;
 
-        let message;
+    Schedule.getSchedules()
+        .then((schedules) => {
+            let message;
 
-        if (schedules.length === 0) {
-            message = 'There are no schedules.';
-        }
+            if (schedules.length === 0) {
+                message = 'There are no schedules.';
+            }
 
-        res.render('schedules', {
-            title,
-            schedules,
-            showLink: true,
-            message,
+            res.render('schedules', {
+                title,
+                schedules,
+                showLink: true,
+                message,
+            });
+        })
+        .catch((err) => {
+            console.log('err inside get/schedules');
+            console.log(err);
+            res.render('/schedules', { title });
         });
-    });
 });
 
 app.get('/schedules/new', (req, res) => {
@@ -213,11 +211,8 @@ app.get('/schedules/new', (req, res) => {
         dates.push(i);
     }
 
-    con.query(
-        'SELECT user_id AS userId, first_name AS firstName, last_name as lastName FROM users',
-        (err, users) => {
-            if (err) throw err;
-
+    User.getUsers()
+        .then((users) => {
             res.render('formAddSchedule', {
                 title,
                 users,
@@ -225,8 +220,12 @@ app.get('/schedules/new', (req, res) => {
                 months,
                 years,
             });
-        }
-    );
+        })
+        .catch((err) => {
+            console.log('err inside get/schedules/new');
+            console.log(err);
+            res.render('/');
+        });
 });
 
 app.post('/schedules', (req, res) => {
@@ -243,11 +242,15 @@ app.post('/schedules', (req, res) => {
         end_time: endTime,
     };
 
-    con.query('INSERT INTO schedules SET ?', newSchedule, (err, result) => {
-        if (err) console.log(err);
-
-        res.redirect('/schedules');
-    });
+    Schedule.insertSchedule(newSchedule)
+        .then(() => {
+            res.redirect('/schedules');
+        })
+        .catch((err) => {
+            console.log('err inside post/schedules');
+            console.log(err);
+            res.redirect('/schedules');
+        });
 });
 
 app.listen(port, () => {
