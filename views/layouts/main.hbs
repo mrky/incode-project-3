@@ -6,10 +6,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
         integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
+        integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
     <title>{{#if title}} {{title}} | {{/if}}Client Server App</title>
 </head>
 
 <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light d-flex justify-content-center">
+        {{!-- <a class="navbar-brand" href="/"><i class="fa fa-home"></i> All Schedules</a> --}}
+        <div>
+            <a class="navbar-brand" href="/"><i class="fa fa-calendar" aria-hidden="true"></i> All
+                Schedules</a>
+            <a class="navbar-brand" href="/users"><i class="fa fa-users" aria-hidden="true"></i> All Users</a>
+            <a class="navbar-brand" href="/schedules/new"><i class="fa fa-calendar-plus-o" aria-hidden="true"></i> New
+                Schedule</a>
+            <a class="navbar-brand" href="/signup"><i class="fa fa-sign-in" aria-hidden="true"></i> Sign up</a>
+        </div>
+    </nav>
+
     <div class="container mt-5">
         {{#if title}}
         <h1 class="text-center mt-4 mb-5">{{title}}</h1>

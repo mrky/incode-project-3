@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/users.model');
 const Schedule = require('../models/schedules.model');
-const crypto = require('crypto');
 
 router.get('/', (req, res) => {
     const title = 'All Users';
@@ -26,32 +25,6 @@ router.get('/', (req, res) => {
 router.get('/new', (req, res) => {
     const title = 'Add a New User';
     res.render('formAddUser', { title });
-});
-
-router.post('/', (req, res) => {
-    const { firstName, lastName, email, password } = req.body;
-
-    const hashedPassword = crypto
-        .createHash('sha256')
-        .update(password)
-        .digest('base64');
-
-    const newUser = {
-        first_name: firstName,
-        last_name: lastName,
-        email,
-        password: hashedPassword,
-    };
-
-    User.insertUser(newUser)
-        .then(() => {
-            res.redirect('/users');
-        })
-        .catch((err) => {
-            console.log('err inside post/users');
-            console.log(err);
-            res.redirect('/users');
-        });
 });
 
 router.get('/:userId', (req, res) => {

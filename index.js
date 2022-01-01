@@ -6,6 +6,7 @@ const port = 3002;
 
 require('dotenv').config();
 
+const indexRouter = require('./routes/index.route');
 const userRouter = require('./routes/users.route');
 const scheduleRouter = require('./routes/schedules.route');
 
@@ -28,13 +29,14 @@ app.engine(
 
 app.use(express.urlencoded({ extended: false }));
 
+app.use('/', indexRouter);
 app.use('/users', userRouter);
 app.use('/schedules', scheduleRouter);
 
-app.get('/', (req, res) => {
+/* app.get('/', (req, res) => {
     const title = 'Welcome to our schedule website';
     res.render('index', { title });
-});
+}); */
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`);
