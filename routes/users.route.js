@@ -83,9 +83,21 @@ router.get('/:userId/schedules', (req, res) => {
                 if (userSchedules.length === 0) {
                     res.render('schedules', { title });
                 } else {
-                    title = `${userSchedules[0].firstName} ${userSchedules[0].lastName}'s Schedules`;
+                    let messageFullName;
+                    let messageFirstName;
+
+                    if (userId === res.locals.user.userId) {
+                        messageFullName = 'My';
+                        messageFirstName = 'You do';
+                    } else {
+                        messageFullName = `${userSchedules[0].firstName} ${userSchedules[0].lastName}'s`;
+                        messageFirstName = userSchedules[0].firstName + 'does';
+                    }
+
+                    title = `${messageFullName} Schedules`;
+
                     if (userSchedules[0].scheduleId === null) {
-                        message = `${userSchedules[0].firstName} does not have any schedules.`;
+                        message = `${messageFirstName} not have any schedules.`;
                         schedules = null;
                     } else {
                         schedules = userSchedules;
