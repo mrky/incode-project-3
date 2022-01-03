@@ -49,26 +49,16 @@ router.get('/', (req, res) => {
 
 router.get('/new', (req, res) => {
     const title = 'Add a New Schedule';
-
-    User.getUsers()
-        .then((users) => {
-            res.render('formAddSchedule', {
-                title,
-                users,
-                dates,
-                months,
-                years,
-            });
-        })
-        .catch((err) => {
-            console.log('err inside get/schedules/new');
-            console.log(err);
-            res.redirect('/');
-        });
+    res.render('formAddSchedule', {
+        title,
+        dates,
+        months,
+        years,
+    });
 });
 
 router.post('/', (req, res) => {
-    const userId = parseInt(req.body.userId);
+    const { userId } = res.locals.user;
     const { day, month, year, startHour, startMinute, endHour, endMinute } =
         req.body;
 
