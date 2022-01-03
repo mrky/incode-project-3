@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Schedule = require('../models/schedules.model');
 const User = require('../models/users.model');
-const crypto = require('crypto');
+const Auth = require('../controllers/auth.controller');
 
 router.get('/', (req, res) => {
     const title = 'All Schedules';
@@ -34,6 +34,38 @@ router.get('/login', (req, res) => {
     res.render('login', { title });
 });
 
+router.post('/login', (req, res) => {
+    const { email, password } = req.body;
+
+    console.log('body is', req.body);
+
+    if (email !== '' && password !== '') {
+        const hashedPassword = Auth.hashPassword(password);
+        console.log('hashed password is', hashedPassword);
+        User.login(email, hashedPassword)
+            .then((user) => {
+                console.log('user is', user);
+                if (user !== undefined && user.length > 0) {
+                    const token = Auth.generateJWT(user[0]);
+                    Auth.setAuthToken(token, res);
+                    console.log('redirecting in if');
+                    res.redirect('/');
+                } else {
+                    console.log('redirecting in else');
+                    res.redirect('/login');
+                }
+            })
+            .catch((err) => {
+                console.log('err in post/login');
+                console.log(err);
+                console.log('redirecting in catch');
+                res.redirect('/login');
+            });
+    } else {
+        res.redirect('/login');
+    }
+});
+
 router.get('/signup', (req, res) => {
     const title = 'Sign up';
     res.render('formAddUser', { title });
@@ -45,10 +77,7 @@ router.post('/signup', (req, res) => {
     if (password !== confirmPassword) {
         res.redirect('/signup');
     } else {
-        const hashedPassword = crypto
-            .createHash('sha256')
-            .update(password)
-            .digest('base64');
+        const hashedPassword = Auth.hashPassword(password);
 
         const newUser = {
             first_name: firstName,
@@ -58,13 +87,21 @@ router.post('/signup', (req, res) => {
         };
 
         User.insertUser(newUser)
-            .then(() => {
-                res.redirect('/users');
+            .then((insertedUserId) => {
+                const payload = {
+                    userId: insertedUserId,
+                    firstName,
+                    lastName,
+                    email,
+                };
+                const token = Auth.generateJWT(payload);
+                Auth.setAuthToken(token, res);
+                res.redirect('/');
             })
             .catch((err) => {
                 console.log('err inside post/users');
                 console.log(err);
-                res.redirect('/users');
+                res.redirect('/signup');
             });
     }
 });

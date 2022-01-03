@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const exphbs = require('express-handlebars');
 const app = express();
+const cookieParser = require('cookie-parser');
 const port = 3002;
 
 require('dotenv').config();
@@ -28,15 +29,11 @@ app.engine(
 );
 
 app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
 
 app.use('/', indexRouter);
 app.use('/users', userRouter);
 app.use('/schedules', scheduleRouter);
-
-/* app.get('/', (req, res) => {
-    const title = 'Welcome to our schedule website';
-    res.render('index', { title });
-}); */
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`);

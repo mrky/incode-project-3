@@ -1,5 +1,17 @@
 const con = require('../db/connect');
 
+function login(email, password) {
+    const sql =
+        'SELECT user_id AS userId, first_name AS firstName, last_name AS lastName, email FROM users WHERE email = ? AND password = ?';
+    return new Promise((resolve, reject) => {
+        con.query(sql, [email, password], (err, user) => {
+            if (err) reject(err);
+
+            resolve(user);
+        });
+    });
+}
+
 function getUsers() {
     const sql =
         'SELECT user_id AS userId, first_name AS firstName, last_name AS lastName, email, password FROM users';
@@ -22,7 +34,7 @@ function getUserById(userId) {
 
             resolve(user);
         });
-    })
+    });
 }
 
 function insertUser(newUser) {
@@ -30,10 +42,9 @@ function insertUser(newUser) {
         con.query('INSERT INTO users SET ?', newUser, (err, result) => {
             if (err) reject(err);
 
-            console.log(result);
-            resolve(result);
+            resolve(result.insertId);
         });
     });
 }
 
-module.exports = { getUsers, getUserById, insertUser };
+module.exports = { login, getUsers, getUserById, insertUser };
