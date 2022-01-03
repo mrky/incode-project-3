@@ -1,3 +1,9 @@
+{{#if successMessage}}
+<div class="text-center">
+    <p class="text-success mt-3 mb-5">{{successMessage}}</p>
+</div>
+{{/if}}
+
 <form action="/login" method="POST" class="mb-4 col-sm col-md-8 col-lg-4 mx-auto">
     <div class="form-group">
         <label for="email">Email</label>

@@ -4,7 +4,7 @@ const Schedule = require('../models/schedules.model');
 const User = require('../models/users.model');
 const Auth = require('../controllers/auth.controller');
 
-router.get('/', (req, res) => {
+router.get('/', Auth.requireAuth, (req, res) => {
     const title = 'All Schedules';
 
     Schedule.getSchedules()
@@ -104,6 +104,15 @@ router.post('/signup', (req, res) => {
                 res.redirect('/signup');
             });
     }
+});
+
+router.get('/logout', (req, res) => {
+    res.clearCookie('authToken');
+    res.render('login', {
+        title: 'Login',
+        successMessage:
+            'You have been successfully logged out. Please login again to use the site.',
+    });
 });
 
 module.exports = router;

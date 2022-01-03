@@ -11,6 +11,8 @@ const indexRouter = require('./routes/index.route');
 const userRouter = require('./routes/users.route');
 const scheduleRouter = require('./routes/schedules.route');
 
+const { requireAuth } = require('./controllers/auth.controller');
+
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
 
@@ -32,8 +34,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use('/', indexRouter);
-app.use('/users', userRouter);
-app.use('/schedules', scheduleRouter);
+app.use('/users', requireAuth, userRouter);
+app.use('/schedules', requireAuth, scheduleRouter);
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`);
