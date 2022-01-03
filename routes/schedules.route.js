@@ -9,6 +9,19 @@ const localeData = require('dayjs/plugin/localeData');
 dayjs.extend(localeData);
 const months = dayjs.months();
 
+const currentYear = new Date().getFullYear();
+
+const years = [currentYear];
+for (let i = 1; i < 5; i++) {
+    const yearToPush = currentYear + i;
+    years.push(yearToPush);
+}
+
+const dates = [];
+for (let i = 1; i <= 31; i++) {
+    dates.push(i);
+}
+
 router.get('/', (req, res) => {
     const title = 'All Schedules';
 
@@ -36,19 +49,6 @@ router.get('/', (req, res) => {
 
 router.get('/new', (req, res) => {
     const title = 'Add a New Schedule';
-
-    const currentYear = new Date().getFullYear();
-
-    const years = [currentYear];
-    for (let i = 1; i < 5; i++) {
-        const yearToPush = currentYear + i;
-        years.push(yearToPush);
-    }
-
-    const dates = [];
-    for (let i = 1; i <= 31; i++) {
-        dates.push(i);
-    }
 
     User.getUsers()
         .then((users) => {
