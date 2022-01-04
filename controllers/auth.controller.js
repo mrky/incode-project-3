@@ -1,13 +1,13 @@
-const crypto = require('crypto');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-function hashPassword(password) {
-    const hashedPassword = crypto
-        .createHash('sha256')
-        .update(password)
-        .digest('base64');
-
-    return hashedPassword;
+async function hashPassword(password) {
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        return hashedPassword;
+    } catch (error) {
+        return error;
+    }
 }
 
 function generateJWT(payload) {

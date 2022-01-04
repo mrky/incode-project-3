@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const bcrypt = require('bcrypt');
 const Schedule = require('../models/schedules.model');
 const User = require('../models/users.model');
 const Auth = require('../controllers/auth.controller');
@@ -40,24 +41,33 @@ router.post('/login', (req, res) => {
     console.log('body is', req.body);
 
     if (email !== '' && password !== '') {
-        const hashedPassword = Auth.hashPassword(password);
-        console.log('hashed password is', hashedPassword);
-        User.login(email, hashedPassword)
-            .then((user) => {
+        User.login(email)
+            .then(async (user) => {
                 console.log('user is', user);
                 if (user !== undefined && user.length > 0) {
-                    const token = Auth.generateJWT(user[0]);
-                    Auth.setAuthToken(token, res);
-                    console.log('redirecting in if');
-                    res.redirect('/');
+                    const correctPassword = await bcrypt.compare(
+                        password,
+                        user[0].password
+                    );
+
+                    if (correctPassword) {
+                        const payload = { ...user[0] };
+                        delete payload.password;
+                        const token = Auth.generateJWT(payload);
+                        Auth.setAuthToken(token, res);
+                        console.log('user found, redirecting in if');
+                        res.redirect('/');
+                    } else {
+                        console.log('incorrect password');
+                        res.redirect('/login');
+                    }
                 } else {
-                    console.log('redirecting in else');
+                    console.log('user not found, redirecting in else');
                     res.redirect('/login');
                 }
             })
             .catch((err) => {
-                console.log('err in post/login');
-                console.log(err);
+                console.log('err in post/login', err);
                 console.log('redirecting in catch');
                 res.redirect('/login');
             });
@@ -77,30 +87,35 @@ router.post('/signup', (req, res) => {
     if (password !== confirmPassword) {
         res.redirect('/signup');
     } else {
-        const hashedPassword = Auth.hashPassword(password);
-
-        const newUser = {
-            first_name: firstName,
-            last_name: lastName,
-            email,
-            password: hashedPassword,
-        };
-
-        User.insertUser(newUser)
-            .then((insertedUserId) => {
-                const payload = {
-                    userId: insertedUserId,
-                    firstName,
-                    lastName,
+        Auth.hashPassword(password)
+            .then((hashedPassword) => {
+                const newUser = {
+                    first_name: firstName,
+                    last_name: lastName,
                     email,
+                    password: hashedPassword,
                 };
-                const token = Auth.generateJWT(payload);
-                Auth.setAuthToken(token, res);
-                res.redirect('/');
+
+                User.insertUser(newUser)
+                    .then((insertedUserId) => {
+                        const payload = {
+                            userId: insertedUserId,
+                            firstName,
+                            lastName,
+                            email,
+                        };
+                        const token = Auth.generateJWT(payload);
+                        Auth.setAuthToken(token, res);
+                        res.redirect('/');
+                    })
+                    .catch((err) => {
+                        console.log('err inside post/users');
+                        console.log(err);
+                        res.redirect('/signup');
+                    });
             })
-            .catch((err) => {
-                console.log('err inside post/users');
-                console.log(err);
+            .catch((error) => {
+                console.log('err in signup');
                 res.redirect('/signup');
             });
     }

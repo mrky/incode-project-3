@@ -91,7 +91,7 @@ router.get('/:userId/schedules', (req, res) => {
                         messageFirstName = 'You do';
                     } else {
                         messageFullName = `${userSchedules[0].firstName} ${userSchedules[0].lastName}'s`;
-                        messageFirstName = userSchedules[0].firstName + 'does';
+                        messageFirstName = userSchedules[0].firstName + ' does';
                     }
 
                     title = `${messageFullName} Schedules`;

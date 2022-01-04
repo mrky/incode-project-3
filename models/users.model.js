@@ -1,10 +1,10 @@
 const con = require('../db/connect');
 
-function login(email, password) {
+function login(email) {
     const sql =
-        'SELECT user_id AS userId, first_name AS firstName, last_name AS lastName, email FROM users WHERE email = ? AND password = ?';
+        'SELECT user_id AS userId, first_name AS firstName, last_name AS lastName, email, password FROM users WHERE email = ?';
     return new Promise((resolve, reject) => {
-        con.query(sql, [email, password], (err, user) => {
+        con.query(sql, email, (err, user) => {
             if (err) reject(err);
 
             resolve(user);
